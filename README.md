@@ -19,32 +19,57 @@ To write a program to predict the profit of a city using the linear regression m
 /*
 Program to implement the linear regression using gradient descent.
 import numpy as np
-from sklearn.datasets import fetch_california_housing
-from sklearn.linear_model import SGDRegressor
-from sklearn.multioutput import MultiOutputRegressor
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_squared_error
-from sklearn.preprocessing import StandardScaler
-data = fetch_california_housing()
-X = data.data[:, :3] # Features: 'MedInc', 'HouseAge', 'AveRooms'
-Y = np.column_stack((data.target, data.data[:, 6])) # Targets: 'MedHouseVal', 'AveOccup'
-X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, random_state=42)
-scaler_X = StandardScaler() scaler_Y = StandardScaler()
-X_train = scaler_X.fit_transform(X_train) X_test = scaler_X.transform(X_test) Y_train = scaler_Y.fit_transform(Y_train) Y_test = scaler_Y.transform(Y_test)
-sgd = SGDRegressor(max_iter=1000, tol=1e-3)
-multi_output_sgd = MultiOutputRegressor(sgd)
-multi_output_sgd.fit(X_train, Y_train)
-Y_pred = multi_output_sgd.predict(X_test)
-Y_pred = scaler_Y.inverse_transform(Y_pred) Y_test = scaler_Y.inverse_transform(Y_test)
-mse = mean_squared_error(Y_test, Y_pred) print("Mean Squared Error:", mse)
-print("\nPredictions:\n", Y_pred[:5]) # Print first 5 predictions
+import pandas as pd
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+
+def linear_regression(X, y, iters=1000, learning_rate=0.01):
+    X = np.hstack((np.ones((X.shape[0], 1)), X))  # Add intercept term
+    theta = np.zeros((X.shape[1], 1))
+    
+    for _ in range(iters):
+        predictions = X.dot(theta)
+        errors = predictions - y.reshape(-1, 1)
+        gradient = (1 / X.shape[0]) * X.T.dot(errors)
+        theta -= learning_rate * gradient
+    
+    return theta
+
+data = pd.read_csv('50_Startups.csv', header=0)
+
+X = data.iloc[:, :-1].values
+y = data.iloc[:, -1].values
+
+ct = ColumnTransformer(transformers=[
+    ('encoder', OneHotEncoder(), [3])  
+], remainder='passthrough')
+
+X = ct.fit_transform(X)
+
+y = y.astype(float)
+
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+theta = linear_regression(X_scaled, y, iters=1000, learning_rate=0.01)
+
+new_data = np.array([165349.2, 136897.8, 471784.1, 'New York']).reshape(1, -1)  # Example new data
+new_data_scaled = scaler.transform(ct.transform(new_data))
+
+new_prediction = np.dot(np.append(1, new_data_scaled), theta)
+
+print(f"Predicted value: {new_prediction[0]}")
+data.head()
+
 Developed by:Girishva.K 
 RegisterNumber:25009292 
 */
 ```
 
 ## Output:
-![523912663-b11ede2c-65db-4171-982c-23bfd4d5d603](https://github.com/user-attachments/assets/6aa3887d-ae85-45ab-8bd5-48fe5124678e)
+Predicted value: 193075.97426510364
+![399854959-ae06e431-21f7-47fe-967b-eaa88d5bf53f](https://github.com/user-attachments/assets/9203ca13-fcc2-4861-ad12-37f2787dff8f)
 
 ## Result:
 Thus the program to implement the linear regression using gradient descent is written and verified using python programming.
