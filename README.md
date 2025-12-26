@@ -19,48 +19,49 @@ To write a program to predict the profit of a city using the linear regression m
 /*
 Program to implement the linear regression using gradient descent.
 import numpy as np
-import pandas as pd
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
-from sklearn.compose import ColumnTransformer
-from sklearn.pipeline import Pipeline
+import matplotlib.pyplot as plt
 
-def linear_regression(X, y, iters=1000, learning_rate=0.01):
-    X = np.hstack((np.ones((X.shape[0], 1)), X))  # Add intercept term
-    theta = np.zeros((X.shape[1], 1))
-    
-    for _ in range(iters):
-        predictions = X.dot(theta)
-        errors = predictions - y.reshape(-1, 1)
-        gradient = (1 / X.shape[0]) * X.T.dot(errors)
-        theta -= learning_rate * gradient
-    
+# Sample training data (Population of City, Profit)
+X = np.array([6.1101, 5.5277, 8.5186, 7.0032, 5.8598, 8.3829])
+y = np.array([17.592, 9.1302, 13.662, 11.854, 6.8233, 13.662])
+
+# Number of samples
+m = len(y)
+
+# Add column of 1s for bias term
+X_b = np.c_[np.ones((m, 1)), X]
+
+# Initialize parameters
+theta = np.zeros(2)
+
+# Gradient Descent settings
+alpha = 0.01
+iterations = 1500
+
+# Cost function
+def compute_cost(X, y, theta):
+    m = len(y)
+    predictions = X.dot(theta)
+    cost = (1/(2*m)) * np.sum((predictions - y)**2)
+    return cost
+
+# Gradient descent algorithm
+def gradient_descent(X, y, theta, alpha, iterations):
+    m = len(y)
+    for _ in range(iterations):
+        gradient = (1/m) * X.T.dot(X.dot(theta) - y)
+        theta = theta - alpha * gradient
     return theta
 
-data = pd.read_csv('50_Startups.csv', header=0)
+# Train model
+theta = gradient_descent(X_b, y, theta, alpha, iterations)
 
-X = data.iloc[:, :-1].values
-y = data.iloc[:, -1].values
+print("Theta values:", theta)
 
-ct = ColumnTransformer(transformers=[
-    ('encoder', OneHotEncoder(), [3])  
-], remainder='passthrough')
-
-X = ct.fit_transform(X)
-
-y = y.astype(float)
-
-scaler = StandardScaler()
-X_scaled = scaler.fit_transform(X)
-
-theta = linear_regression(X_scaled, y, iters=1000, learning_rate=0.01)
-
-new_data = np.array([165349.2, 136897.8, 471784.1, 'New York']).reshape(1, -1)  # Example new data
-new_data_scaled = scaler.transform(ct.transform(new_data))
-
-new_prediction = np.dot(np.append(1, new_data_scaled), theta)
-
-print(f"Predicted value: {new_prediction[0]}")
-data.head()
+# Predict profit for any city population
+population = float(input("Enter city population: "))
+prediction = theta[0] + theta[1] * population
+print("Predicted Profit:", prediction)
 
 Developed by:Girishva.K 
 RegisterNumber:25009292 
@@ -68,8 +69,8 @@ RegisterNumber:25009292
 ```
 
 ## Output:
-Predicted value: 193075.97426510364
-![399854959-ae06e431-21f7-47fe-967b-eaa88d5bf53f](https://github.com/user-attachments/assets/23a1e7b6-69d7-430e-86c8-976e6aaec8a6)
+
+<img width="612" height="146" alt="522993289-0ba6bdc9-d8fc-4f5c-aaa1-e32f91efd56b" src="https://github.com/user-attachments/assets/e6e69ac9-ac38-4845-8979-ab305832fc6d" />
 
 ## Result:
 Thus the program to implement the linear regression using gradient descent is written and verified using python programming.
